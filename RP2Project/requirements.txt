@@ -1,0 +1,26 @@
+Text data, save as depression_text.csv
+https://www.kaggle.com/datasets/rishabhkausish/reddit-depression-dataset
+audio dataset,
+https://www.kaggle.com/datasets/uwrfkaggler/ravdess-emotional-speech-audio
+Python 3.10.0 +
+
+libraries to be installed
+pip install nltk 
+pip install numpy
+pip install pandas
+pip install gensim
+pip install gc
+pip install math
+pip install keras
+pip install smart_open
+pip install sklearn
+pip install matplotlib
+pip install tensorflow
+pip install torch
+pip install torchvision
+pip install torchaudio
+pip install librosa
+pip install transformers
+pip install opencv-python
+pip install face-alignment
+pip install scikit-learn

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Depression Detection</title>
+</head>
+<body>
+    <h2>Emotion-Aware multi model system for early Depression Detection</h2>
+    <hr>
+    <h3>Enter text for Depression Detection</h3>
+    <form action="/predict" method="POST">
+        <textarea name="user_text" rows="6" cols="50" placeholder="Enter your text here..." required></textarea>
+        <br><br>
+        <button type="submit">Analyze</button>
+    </form>
+    <hr>
+<h3>Upload Audio for Depression Detection</h3>
+
+<form action="/predict_audio" method="POST" enctype="multipart/form-data">
+    <input type="file" name="audio_file" accept=".wav" required>
+    <br><br>
+    <button type="submit">Analyze Audio</button>
+</form>
+
+</body>
+</html>
