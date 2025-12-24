@@ -14,7 +14,7 @@ depression_detection/
 │   └── predict_audio.py
 │
 ├── fusion/
-│   └── fusion.py
+│   └── train_fusion_model.py
 │
 ├── app.py   # final UI / CLI
 └── requirements.txt
@@ -43,4 +43,6 @@ It:
 
 Now run the project, in terminal
 └──python app.py
-
+In terminal, run:
+python fusion/train_fusion_model.py
+to know the prediction accuracy of the model
