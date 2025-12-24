@@ -1,74 +1,66 @@
 import pickle
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
-# Load text model
-text_model = pickle.load(open("text_model/text_model.pkl", "rb"))
-
-# Load audio model
-audio_model = pickle.load(open("audio_model/audio_model.pkl", "rb"))
-
-# -----------------------------------------------------------
-# Load datasets (you MUST already have feature files)
-# -----------------------------------------------------------
-
-# Text features
+# ----------------------------
+# Load saved test data
+# ----------------------------
 X_text_test = pickle.load(open("text_model/X_text_test.pkl", "rb"))
 y_text_test = pickle.load(open("text_model/y_text_test.pkl", "rb"))
 
-# Audio features
 X_audio_test = pickle.load(open("audio_model/X_audio_test.pkl", "rb"))
 y_audio_test = pickle.load(open("audio_model/y_audio_test.pkl", "rb"))
 
-# Make sure labels match
-y_test = np.array(y_text_test)
+# ----------------------------
+# Load trained models
+# ----------------------------
+text_model = pickle.load(open("text_model/text_model.pkl", "rb"))
+tfidf = pickle.load(open("text_model/tfidf.pkl", "rb"))
+audio_model = pickle.load(open("audio_model/audio_model.pkl", "rb"))
 
-# -----------------------------------------------------------
-# Fusion Model
-# -----------------------------------------------------------
+# ----------------------------
+# Generate fusion features
+# ----------------------------
+fusion_X = []
+fusion_y = []
 
-final_probs = []
-final_preds = []
+N = min(len(X_text_test), len(X_audio_test))
 
-for i in range(len(y_test)):
-    text_vector = tfidf.transform([X_text_test[i]])   # Convert string → TF-IDF vector
-    text_prob = text_model.predict_proba(text_vector)[0][1]
+for i in range(N):
+    # TEXT probability
+    text_vec = tfidf.transform([X_text_test[i]])
+    text_prob = text_model.predict_proba(text_vec)[0][1]
 
-    audio_prob = audio_model.predict_proba(X_audio_test[i].reshape(1, -1))[0][1]
+    # AUDIO probability
+    audio_prob = audio_model.predict_proba([X_audio_test[i]])[0][1]
 
-    fused_prob = (0.6 * text_prob) + (0.4 * audio_prob)
-    final_probs.append(fused_prob)
+    fusion_X.append([text_prob, audio_prob])
+    fusion_y.append(y_text_test.iloc[i])
 
-    final_preds.append(1 if fused_prob >= 0.5 else 0)
 
-# -----------------------------------------------------------
-# Metrics
-# -----------------------------------------------------------
+fusion_X = np.array(fusion_X)
+fusion_y = np.array(fusion_y)
 
-acc = accuracy_score(y_test, final_preds)
-prec = precision_score(y_test, final_preds)
-rec = recall_score(y_test, final_preds)
-f1 = f1_score(y_test, final_preds)
-auc = roc_auc_score(y_test, final_probs)
+# ----------------------------
+# Train Fusion Classifier
+# ----------------------------
+fusion_model = LogisticRegression()
+fusion_model.fit(fusion_X, fusion_y)
 
-print("\n===== FUSION MODEL ACCURACY =====")
-print("Accuracy:", acc)
-print("Precision:", prec)
-print("Recall:", rec)
-print("F1-score:", f1)
-print("AUC:", auc)
+# ----------------------------
+# Evaluate Accuracy
+# ----------------------------
+y_pred = fusion_model.predict(fusion_X)
+accuracy = accuracy_score(fusion_y, y_pred)
 
-# -----------------------------------------------------------
-# Save fusion model as a dictionary
-# -----------------------------------------------------------
+print("\n🔥 MULTIMODAL FUSION MODEL ACCURACY 🔥")
+print("====================================")
+print("Accuracy:", round(accuracy * 100, 2), "%")
 
-fusion_model = {
-    "text_model": text_model,
-    "audio_model": audio_model,
-    "text_weight": 0.6,
-    "audio_weight": 0.4
-}
+# ----------------------------
+# Save fusion model
+# ----------------------------
+pickle.dump(fusion_model, open("fusion/fusion_model.pkl", "wb"))
 
-pickle.dump(fusion_model, open("fusion_model.pkl", "wb"))
-
-print("\nFusion model saved as fusion_model.pkl")
+print("\nFusion model saved successfully!")
